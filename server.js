@@ -1,3 +1,4 @@
+import 'dotenv/config'; 
 import express from 'express';
 import {createApp} from './src/app.js';
 import {html_, _html, html1, html2, html3 } from './src/componentHtml.js';
@@ -29,7 +30,10 @@ server.get('/',(req, res) => {
   catch(err){console.error(err.message)};
 });
 
+const PORT = 3000;
+
 server.use(express.static('.'));
-server.listen(3000, () => {
-    console.log('ready http://localhost:3000');
+
+server.listen(PORT, () => {
+  console.log('ready http://localhost:3000');
 });

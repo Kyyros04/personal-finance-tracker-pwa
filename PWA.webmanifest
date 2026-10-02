@@ -1,6 +1,6 @@
 {
-    "name":"MyApp",
-    "short_name": "SAW",
+    "name":"personal-finance-tracker-pwa",
+    "short_name": "finance-tracker",
     "theme_color": "#E64A19",
     "display": "standalone",
     "scope": "/",

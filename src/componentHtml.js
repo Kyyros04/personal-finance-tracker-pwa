@@ -3,6 +3,17 @@ const html_=
 `<!DOCTYPE html><html lang="en"><head><title>SawProject-EB</title><meta name="viewport" content="width=device-width, initial-scale=1" name="theme-color"></meta>
 <script type="importmap">{"imports": {"vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js", "firebase/auth": "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js", "firebase/app":"https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js", "firebase/firestore":"https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js" ,"uuid": "https://jspm.dev/uuid"}}</script>
 <script type="module" src="/src/client.js"></script>
+ <script>
+        // Iniettiamo le variabili nel browser prima che parta Vue
+        window.process = {
+          env: {
+            FIREBASE_API_KEY: "${process.env.FIREBASE_API_KEY}",
+            FIREBASE_AUTH_DOMAIN: "${process.env.FIREBASE_AUTH_DOMAIN}",
+            FIREBASE_PROJECT_ID: "${process.env.FIREBASE_PROJECT_ID}",
+            FIREBASE_STORAGE_BUCKET: "${process.env.FIREBASE_STORAGE_BUCKET}"
+          }
+        };
+      </script>
 <link rel="stylesheet" a href="./src/mycss.css">
 <link rel="manifest" type="application/manifest+json" a href="PWA.webmanifest">
 <link rel="icon" type="image/x-icon" href="/src/icons/favicon.ico" />
@@ -276,19 +287,47 @@ const subComponentTransition_Html=`
         </div>
 </div>
 <div class="Container-Transitions" :style="{ display: displayAppSpese.containerTransitions }">
-  <div class="list-transitions">
-   <li v-for="item in arrayTransitions">
-    <div class="dropdown-transition-actions">
-      <div class="transition-actions-item" :style="{ background: GetCateg(item[0]).color }" ><div class="t-div-ncateg"> <div class="t-div-date"> {{item[3]}} </div> {{GetCateg(item[0]).nCateg}} </div><div class="t-div-desc">{{item[1]}}</div><div class="t-div-value">{{item[2]}}</div></div>
-      <div class="dropdown-transition-actions-content">
-        <ul class="list-group-categ-action">
-          <li><div class="trans-action-item"  @click="OpenDelTransitionGump(item[0],item[1],item[2],item[3])">Delete Transition</div></li>
-          <li><div class="trans-action-item"  @click="OpenModTransitionGump(item[0],item[1],item[2],item[3])">Mod Transition</div></li>
-        </ul>  
+  <!-- La lista si attiva SOLO quando le categorie sono realmente pronte in memoria -->
+<ul class="list-transitions" v-if="categories.value && Object.keys(categories.value).length > 0">
+  <li v-for="item in arrayTransitions" :key="item[0]" class="transition-row" :style="{ borderLeftColor: categories.value[codContainer[item[0]]]?.color }">
+    
+    <!-- Contenitore di sinistra: Icona + Testi -->
+    <div class="t-left-block">
+      <div class="t-icon-container" :style="{ backgroundColor: categories.value[codContainer[item[0]]]?.color + '15', borderColor: categories.value[codContainer[item[0]]]?.color }">
+        <img :src="LoadImg(categories.value[codContainer[item[0]]].codIcona)" 
+             alt="icon" 
+             class="t-icon-img" 
+             v-if="categories.value[codContainer[item[0]]]?.codIcona !== undefined" 
+        />
       </div>
-    </div>  
+      
+      <!-- Blocco scritte: Data e Nome Categoria -->
+      <div class="t-meta-block">
+        <span class="t-date">{{ item[3] }}</span>
+        <span class="t-category">{{ codContainer[item[0]] }}</span>
+      </div>
+    </div>
+    
+    <!-- Nota/Descrizione al centro -->
+    <div class="t-desc">{{ item[1] }}</div>
+    
+    <!-- Valore economico (Prezzo) -->
+    <div class="t-value">-{{ item[2] }} €</div>
+
+    <!-- Pulsanti di azione rapidi in linea -->
+    <div class="trans-actions-block">
+      <button class="btn-inline-action mod" @click="OpenModTransitionGump(item[0], item[1], item[2], item[3])">Mod</button>
+      <button class="btn-inline-action del" @click="OpenDelTransitionGump(item[0], item[1], item[2], item[3])">Del</button>
+    </div>
+
   </li>
-  </div>
+</ul>
+
+<!-- Fallback visivo temporaneo mentre Firebase sta scaricando i dati -->
+<div v-else class="t-loading-text">
+  Loading your balance ledger...
+</div>
+
 </div>`;
 
 const subComponentTools_Html=`
