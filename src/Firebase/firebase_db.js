@@ -1,6 +1,6 @@
 import { app } from "./firebase_config.js";
 import { setDoc, updateDoc, doc, getDoc, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, query } from 'firebase/firestore';
-import {MakeObjToSave, LoadSave} from '../mymacros/httpRequest-fun.js';
+import {MakeObjToSave, LoadSave} from '../utils/httpRequest-fun.js';
 import { userStore } from "./firebase_auth.js";
 
 const db = initializeFirestore(app, {

@@ -1,6 +1,6 @@
 import { works } from '../Firebase/firebase_db.js';
 import { categories, codContainer, warning, ItemDataSetter, modalTransitionState, inModal, itemData } from '../globalVar.js';
-import { CheckDate, Sorting } from '../mymacros/macro-functions.js';
+import { CheckDate, Sorting } from '../utils/helpers.js';
 import { v4 as uuid } from 'uuid';
 
 export const OpenAddTransitionGump = (nameCateg,nIcon,color) => { 
@@ -74,19 +74,20 @@ export const ModTransition=()=>{
         }
     }catch(e){console.error("error when try to modify the transition: "+itemData.value.codTransition+" "+e);}
 }
+
 export function GetTransitions(obj){
-    if(Object.entries(obj.value).length==0){
+    if(!obj || !obj.value || Object.entries(obj.value).length == 0){
         return [];
     }
-    var arr=[];
+    var arr = [];
     for(var category in obj.value){
-        console.log(category);
-        for(var item of obj.value[category]["Transitions"]){
-            console.log(item);
-            arr.push([item[0],item[1],item[2],item[3]]);
+        if(obj.value[category]["Transitions"]){
+            for(var item of obj.value[category]["Transitions"]){
+                arr.push([item[0], item[1], item[2], item[3]]);
+            }
         }
     }
-    return arr.sort((a,b)=>Sorting(a[3],b[3]));
+    return [...arr].sort((a, b) => Sorting(a[3], b[3]));
 }
 
 function CheckFormatTransition(value,date){

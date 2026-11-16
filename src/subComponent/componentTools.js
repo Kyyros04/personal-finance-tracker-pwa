@@ -1,7 +1,7 @@
 import { categories, date, inModal, itemData_Tools, warning, ClearItemDataTools } from "../globalVar.js";
 import { computed , watch } from 'vue';
 import { graphView } from '../myclass.js';
-import {CheckDate} from '../mymacros/macro-functions.js';
+import {CheckDate} from '../utils/helpers.js';
 
 var viewgraph=new graphView();
 
@@ -20,9 +20,16 @@ export const ConfirmDate = () => {
       break;
       default:{warning.value="scegliere il tipo di data"; return;}
     }
+
     console.log(itemData_Tools.type+" "+ itemData_Tools.value);
-    [date.type,date.value, itemData_Tools.tabBool ,itemData_Tools.sumBool, inModal.bool,warning.value,itemData_Tools.toolsGump]
-      =[itemData_Tools.type,itemData_Tools.value.toString(),"block","block",false,"","none"];
+
+    date.type = itemData_Tools.type;
+    date.value = itemData_Tools.value.toString();
+    itemData_Tools.tabBool = "block";
+    itemData_Tools.sumBool = "block";
+    inModal.bool = false;
+    warning.value = "";
+    itemData_Tools.toolsGump = "none";
 }
 export const OpenToolsGump = () => {
   ClearItemDataTools();
@@ -30,41 +37,62 @@ export const OpenToolsGump = () => {
   warning.value="";
 }
 export const CloseToolsGump = () => {
-  [inModal.bool,warning.value,itemData_Tools.toolsGump,
-    itemData_Tools.value, itemData_Tools.type]=[false,"","none","",""];
+  inModal.bool = false;
+  warning.value = "";
+  itemData_Tools.toolsGump = "none";
+  itemData_Tools.value = "";
+  itemData_Tools.type = "";
 }
-watch(()=>itemData_Tools.type,(type) => {
+
+watch(()=>itemData_Tools.type, (type) => {
   switch(type){
-      case "day": [itemData_Tools.yBool,itemData_Tools.mBool,itemData_Tools.dBool,
-        itemData_Tools.aBool, itemData_Tools.type]=["none","none","flex","none","day"];
+      case "day": 
+        itemData_Tools.yBool = "none"; itemData_Tools.mBool = "none"; 
+        itemData_Tools.dBool = "flex"; itemData_Tools.aBool = "none"; 
       break;
-      case "week": [itemData_Tools.yBool,itemData_Tools.mBool,itemData_Tools.dBool,
-        itemData_Tools.aBool, itemData_Tools.type]=["none","none","flex","none","week"];
+      case "week": 
+        itemData_Tools.yBool = "none"; itemData_Tools.mBool = "none"; 
+        itemData_Tools.dBool = "flex"; itemData_Tools.aBool = "none"; 
       break;
-      case "month": [itemData_Tools.yBool,itemData_Tools.mBool,itemData_Tools.dBool,
-        itemData_Tools.aBool, itemData_Tools.type]=["none","flex","none","none","month"];
+      case "month": 
+        itemData_Tools.yBool = "none"; itemData_Tools.mBool = "flex"; 
+        itemData_Tools.dBool = "none"; itemData_Tools.aBool = "none"; 
       break;
-      case "year": [itemData_Tools.yBool,itemData_Tools.mBool,itemData_Tools.dBool,
-        itemData_Tools.aBool, itemData_Tools.type]=["flex","none","none","none","year"];
+      case "year": 
+        itemData_Tools.yBool = "flex"; itemData_Tools.mBool = "none"; 
+        itemData_Tools.dBool = "none"; itemData_Tools.aBool = "none"; 
       break;
-      case "alltime": [itemData_Tools.yBool,itemData_Tools.mBool,itemData_Tools.dBool,
-        itemData_Tools.aBool, itemData_Tools.type]=["none","none","none","flex","alltime"];
+      case "alltime": 
+        itemData_Tools.yBool = "none"; itemData_Tools.mBool = "none"; 
+        itemData_Tools.dBool = "none"; itemData_Tools.aBool = "flex"; 
       break;
-      case "":break;
+      case "": break;
       default: warning.value="Errore nel tipo della data";
   }
 })
 
+
 const CalculateGraphs = () => {
-  viewgraph=new graphView(categories.value)
-  if(Object.entries(categories.value).length==0)return {"h_bar":{}, "week":{}, "month":{}, "year":{}, "all":{}};
+
+   if (!categories.value || Object.entries(categories.value).length == 0) {
+    return {"h_bar":{}, "week":{}, "month":{}, "year":{}, "all":{}};
+  }
+
+  const categoriesClone = JSON.parse(JSON.stringify(categories.value));
+  
+  viewgraph = new graphView(categoriesClone);
+
+  if(Object.entries(categories.value).length==0) return {"h_bar":{}, "week":{}, "month":{}, "year":{}, "all":{}};
   viewgraph.ShowGraphics(date.type,date.value);
-  return {"h_bar": viewgraph.SumValueTransition(), 
-    "week":viewgraph.week, "month":viewgraph.month, 
+  return {
+    "h_bar": viewgraph.SumValueTransition(), 
+    "week":viewgraph.week, 
+    "month":viewgraph.month, 
     "year":viewgraph.year,
     "all":viewgraph.allTime
   };
 }
+
 export const objView = computed(()=>CalculateGraphs());
 
 

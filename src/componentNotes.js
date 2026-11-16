@@ -1,7 +1,7 @@
 import { reactive, watch, computed } from 'vue';
 import {displayAppNotes, items, itemData_Nota, inModal, warning} from './globalVar.js';
 import { Nota } from './myclass.js';
-import { sortObject } from './mymacros/macro-functions.js';
+import { sortObject } from './utils/helpers.js';
 import { componentNotes_Html } from './componentHtml.js';
 import { works } from './Firebase/firebase_db.js';
 

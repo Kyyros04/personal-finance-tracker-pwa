@@ -1,4 +1,4 @@
-import {categories, codContainer, objGraphView } from "./globalVar.js";
+import { categories, codContainer, objGraphView } from "./globalVar.js";
 import { checkNested, CheckDate, GetWeek} from "./mymacros/macro-functions.js";
 
 const Nota=(title,lastaccess,text="")=>{
@@ -22,20 +22,12 @@ export class graphView{
         this.week={};
         this.year={};
     }
-    /* example: return {  sumAll:0
-                    categ:{ "svago":{ sum 100 , metadati } }, 
-                    years: { "1992": {   sumYear:0   
-                                         categ:{},
-                                         mesi{ "febbraio": {sumMonth:0
-                                                            categ:{ "svago":{ sum 100 , metadati } }, 
-                                                            giorni: { "1" : { transitions: [["trans1"]],
-                                                                              sumDay:0,
-                                                                              ncateg:{"svago": { sum 100, fun }}  
-                                                                            }}}} */
+
     GetMapCategorie(categorie){
         var allTime={"max":0 , "sum":0, "categ":{}, "years":{}};
         if(categorie===undefined) return {allTime};
         for(var categoria in categorie){
+            if(!categorie[categoria]["Transitions"]) continue;
             for(let transition of categorie[categoria]["Transitions"]){
                 let date=transition[3];
                 date=date.split("-");
@@ -67,13 +59,16 @@ export class graphView{
         this.CalculateMax(allTime);
         return {allTime};
     }
+    
     GetCateg(transition,init=true){
         let nCateg=codContainer[transition[0]];
-        let obj={"max":parseFloat(transition[2]),"sum":parseFloat(transition[2]),"metadati": categories.value[nCateg]}
+        let colorFallback = categories.value[nCateg] ? categories.value[nCateg].color : "#10b981";
+        let obj={"max":parseFloat(transition[2]),"sum":parseFloat(transition[2]),"metadati": { "color": colorFallback }}
         let obj1={};
         obj1[nCateg]=obj;
         return (init?obj1:obj);
     }
+    
     SetCateg(arr,transition){
         let [nCateg,value]=[codContainer[transition[0]],parseFloat(transition[2])];
         for(let obj of arr){
@@ -87,6 +82,7 @@ export class graphView{
             }
         }
     }
+    
     InitializeYear(transition,date,allTime,what){
         let objDay={"transitions":[transition], "categ": this.GetCateg(transition) ,"sum":parseFloat(transition[2]), "max":parseFloat(transition[2])};
         if(what==="day")return objDay;
@@ -99,6 +95,7 @@ export class graphView{
         let objYear={"max":parseFloat(transition[2]),"sum":parseFloat(transition[2]), "categ": this.GetCateg(transition) ,"months": month};
         return objYear;
     }
+    
     GetGraph(date){
         if(date===undefined) return this.map["allTime"];
         if(Object.entries(this.map).length==0) return {}; 
@@ -113,8 +110,9 @@ export class graphView{
             if(year!==undefined) return yearsmap[year]===undefined?{}:yearsmap[year];
             return {};
         }
-        catch(e){console.error(e); return {}}
+        catch(e) { return {}; }
     }
+    
     CalculateMax(alltime){
         for(let year in alltime.years){
             let objyear=alltime.years[year];
@@ -129,10 +127,12 @@ export class graphView{
             }
         }
     }
+    
     ShowDay(date){
         this.arrGraph=[];
         date=date.split('-');
         for(var category in this.categorie){
+            if(!this.categorie[category]["Transitions"]) continue;
             for(var transition of this.categorie[category]["Transitions"]){
                 let fulldate=transition[3];
                 let arrDate=fulldate.split('-');
@@ -140,8 +140,9 @@ export class graphView{
             }
         }
     }
+    
     CalculateWeek(date){
-        if(!CheckDate(date)) return [];
+        if(!CheckDate(date)) return {"arr": [], "sum": 0, "max": 0};
         let week=GetWeek(date);
         let arr=[];
         let sum=0;
@@ -156,10 +157,12 @@ export class graphView{
         }
         return { "arr": arr, "sum":sum, "max":max};
     }
+    
     ShowWeek(date){
         this.arrGraph=[];
         let weekdate=GetWeek(date);
         for(var category in this.categorie){
+            if(!this.categorie[category]["Transitions"]) continue;
             for(var transition of this.categorie[category]["Transitions"]){
                 let fulldate=transition[3];
                 for(let day of weekdate){
@@ -171,10 +174,12 @@ export class graphView{
             }
         }
     }
+    
     ShowMonth(monthDate){
         this.arrGraph=[];
         monthDate=monthDate.split('-');
         for(var category in this.categorie){
+            if(!this.categorie[category]["Transitions"]) continue;
             for(var transition of this.categorie[category]["Transitions"]){
                 let fulldate=transition[3];
                 let arrDate=fulldate.split('-');
@@ -182,47 +187,64 @@ export class graphView{
             }
         }
     }
+    
     ShowYear(year){
         this.arrGraph=[];
         for(var category in this.categorie){
+            if(!this.categorie[category]["Transitions"]) continue;
             for(var transition of this.categorie[category]["Transitions"]){
                 let arrYear = transition[3].split("-");
                 if(arrYear[0]==year)this.arrGraph.push(transition);
             }
         }
     }
+    
     ShowAll(){
         this.arrGraph=[];
         for(var category in this.categorie){
+            if(!this.categorie[category]["Transitions"]) continue;
             for(var transition of this.categorie[category]["Transitions"]){
                 this.arrGraph.push(transition);
             }
         }
     }
+    
     SumValueTransition(){
-        [this.containerColors,objGraphView.value,objGraphView.sum]=[{},{},0];
-        if(this.arrGraph.length==0)return {};
+        var localGraphValue = {};
+        var localSum = 0;
+        
+        if(this.arrGraph.length == 0) {
+            objGraphView.sum = 0; 
+            return localGraphValue;
+        }
+        
         for(var item of this.arrGraph){
-            let category=codContainer[item[0]];
-            if(!objGraphView.value[category]){
-                let [value, newcolor]=[parseFloat(item[2])];
-                newcolor=categories.value[category]["color"];
-                objGraphView.value[category]={"nCateg":category,"transitions":[item],"sum":value, "color": newcolor};
-                objGraphView.sum+=value;
+            let category = codContainer[item[0]]; 
+            if(!category) continue;
+            
+            if(!localGraphValue[category]){
+                let value = parseFloat(item[2]); 
+                let newcolor = categories.value[category] ? categories.value[category]["color"] : "#10b981";
+                localGraphValue[category] = {"nCateg":category,"transitions":[item],"sum":value, "color": newcolor};
+                localSum += value;
             }
             else{
-                objGraphView.value[category]["sum"]+=parseFloat(item[2]);
-                objGraphView.sum+=parseFloat(item[2]);
-                objGraphView.value[category]["transitions"].push(item);
+                localGraphValue[category]["sum"] += parseFloat(item[2]);
+                localSum += parseFloat(item[2]);
+                localGraphValue[category]["transitions"].push(item);
             }
         }
-        return objGraphView.value;
+
+        objGraphView.sum = localSum;
+        
+        return localGraphValue;
     }
+    
     ShowGraphics(type, value){
         switch(type){
             case "month":{
                 this.month=this.GetGraph(value);
-                this.ShowMonth(value); 
+                this.ShowMonth(value);
             }break;
             case "week":{
                 this.week=this.CalculateWeek(value);
@@ -230,7 +252,7 @@ export class graphView{
             }break;
             case "day":{
                 this.week=this.CalculateWeek(value);
-                this.ShowDay(value); 
+                this.ShowDay(value);
             }break;
             case "year":{
                 this.year=this.GetGraph(value);

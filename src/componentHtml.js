@@ -20,10 +20,10 @@ const html_=
 <meta name="description" content="Use this free PWA to manage your expenses">
 </head><body>
 <div class="container-page">
-<div class="container-main"><div id="app0">`;
-const html1=`</div><div id="app1">`;
-const html2=`</div><div id="app2">`;
-const html3=`</div><div id="app3">`;
+<div class="container-main"><div id="app-menu">`;
+const html1=`</div><div id="app-notes">`;
+const html2=`</div><div id="app-auth">`;
+const html3=`</div><div id="app-expenses">`;
 const _html=`</div></div></div><div class="footer"><p>Developed by Edoardo Barigliano</p><div>Icon made by UIcons from <a href="www.flaticon.com"> www.flaticon.com</a></div></div></body></html>`;
 
 //HTML FOR TEMPLATE: app components
@@ -131,32 +131,74 @@ const componentAuthentication_Html=`
 `;
 
 const subComponentCategory_Html=`
+<!-- ==================== MODAL ADD ==================== -->
 <div :style="{ display: modalCategState.add }" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-            <span class="close"  @click="CloseCategGump(0)">&times;</span>
+    <div class="modal-content">
+        <span class="close" @click="CloseCategGump(0)">&times;</span>
+        
+        <h2 class="modal-title-header">Nuova Categoria</h2>
+        
+        <!-- Campo Input Nome -->
+        <div class="form-group-vertical">
             <input class="input-nCateg" maxlength="30" v-model="itemData.value.nCateg" placeholder="Nome Categoria">
-            <div class="div-icon"  @click="OpenCategGump('iconPicker')">Icona:</div>
-            <img class="img-icon" v-if="itemData.value.nIcon!=''" :src="LoadImg(itemData.value.nIcon)" alt=""/> 
-            <div class="div-color"  @click="OpenCategGump('genericColorPicker')">Colore:</div>
-            <div class="color-pick" v-if="itemData.value.color!=''" :style="{ background: itemData.value.color }" />
-            <div class="btn-modal" @click="AddCateg">Confirm Categories</div>
-            <p class="warning">{{ warning }}</p>
         </div>
+        
+        <!-- Blocco Selettori Affiancati (Icona e Colore) -->
+        <div class="form-row-pickers">
+            <div class="picker-box">
+                <span class="picker-label">Icona</span>
+                <div class="picker-preview" @click="OpenCategGump('iconPicker')">
+                    <img class="img-icon" v-if="itemData.value.nIcon!=''" :src="LoadImg(itemData.value.nIcon)" alt="icon"/>
+                    <span v-else class="picker-placeholder">+</span>
+                </div>
+            </div>
+            
+            <div class="picker-box">
+                <span class="picker-label">Colore</span>
+                <div id="color-picker-trigger" class="picker-preview" @click="OpenCategGump('genericColorPicker')":style="{ background: itemData.value.color != '' ? itemData.value.color : '#374151' }">
+                    <span v-if="itemData.value.color===''" class="picker-placeholder">+</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="btn-modal" @click="AddCateg">Conferma Categoria</div>
+        <p class="warning">{{ warning }}</p>
+    </div>
 </div>
+
+<!-- ==================== MODAL MOD ==================== -->
 <div :style="{ display: modalCategState.mod }" class="modal">
-        <!-- Modal content -->
-        <div class="modal-content">
-            <span class="close"  @click="CloseCategGump(0)">&times;</span>
-            <h2>{{itemData.value.nCateg}}</h2>
-            <input class="input-nCateg" maxlength="30" v-model="itemData.value.rename" placeholder="Rename Category">
-            <div class="div-icon"  @click="OpenCategGump('iconPicker')">Icona:</div>
-            <img class="img-icon" v-if="itemData.value.nIcon!=''" :src="LoadImg(itemData.value.nIcon)" alt=""/> 
-            <div class="div-color"  @click="OpenCategGump('genericColorPicker')">Colore:</div>
-            <div class="color-pick" v-if="itemData.value.color!=''" :style="{ background: itemData.value.color }" />
-            <div class="btn-modal" @click="ModCateg">Confirm Categories</div>
-            <p class="warning">{{ warning }}</p>
+    <div class="modal-content">
+        <span class="close" @click="CloseCategGump(0)">&times;</span>
+        
+        <h2 class="modal-title-header">Modifica Categoria</h2>
+        
+        <!-- Campo Input Nome Modificato -->
+        <div class="form-group-vertical">
+            <input class="input-nCateg" maxlength="30" v-model="itemData.value.rename" placeholder="Rinomina Categoria">
         </div>
+        
+        <!-- Blocco Selettori Affiancati (Icona e Colore) -->
+        <div class="form-row-pickers">
+            <div class="picker-box">
+                <span class="picker-label">Icona</span>
+                <div class="picker-preview" @click="OpenCategGump('iconPicker')">
+                    <img class="img-icon" v-if="itemData.value.nIcon!=''" :src="LoadImg(itemData.value.nIcon)" alt="icon"/>
+                    <span v-else class="picker-placeholder">+</span>
+                </div>
+            </div>
+            
+            <div class="picker-box">
+                <span class="picker-label">Colore</span>
+                <div id="color-picker-trigger" class="picker-preview" @click="OpenCategGump('genericColorPicker')":style="{ background: itemData.value.color != '' ? itemData.value.color : '#374151' }">
+                    <span v-if="itemData.value.color===''" class="picker-placeholder">+</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="btn-modal" @click="ModCateg">Salva Modifiche</div>
+        <p class="warning">{{ warning }}</p>
+    </div>
 </div>
 <div :style="{ display: modalCategState.del }" class="modal">
         <!-- Modal content -->
@@ -217,24 +259,44 @@ const subComponentCategory_Html=`
             </div>
         </div>
 </div>
-<div class="Container-Spese" :style="{ display: displayAppSpese.containerSpese }">
-  <div class="area-categorie">
-    <li v-for="item in categories.value">
-    <div class="dropdown-categ-actions"> 
-      <div class="categ-actions-item" :style="{ background: item.color }"><h2>{{item.nCateg}}</h2><img class="img-icon" :src="LoadImg(item.codIcona)" alt="" /></div>
-      <div class="dropdown-categ-actions-content">
-        <ul class="list-group-categ-action">
-          <li><div class="categ-action-item"  @click="OpenAddTransitionGump(item.nCateg,item.codIcona,item.color)">Add Transition</div></li>
-          <li><div class="categ-action-item"  @click="OpenCategGump('mod',item.nCateg,item.codIcona,item.color)">Mod Category</div></li>
-          <li><div class="categ-action-item"  @click="OpenCategGump('del',item.nCateg,item.codIcona,item.color)">Del Category</div></li>
-          <li><div class="categ-action-item"  @click="OpenCategGump('merge',item.nCateg,item.codIcona,item.color)">Merge Category</div></li>
-        </ul>  
-      </div>
+<div class="Container-Spese" v-show="currentTab === 'categories'">
+  <div class="area-categorie-wrapper">
+    
+    <!-- Header fisso con titolo e bottone di aggiunta rapida -->
+    <div class="categories-action-header">
+      <h3 class="categories-header-title">Le tue Categorie</h3>
+      <button class="btn-add-category-fixed" @click="OpenCategGump('add')" title="Aggiungi Categoria">
+        <span class="btn-add-icon">+</span> Nuova Categoria
+      </button>
     </div>
-    </li>
-    <li class="li-add-categ"><button @click="OpenCategGump('add')"><img src="/src/img/piu.png" alt="" ></button></li>
+
+    <!-- La griglia contiene esclusivamente le carte delle categorie reali -->
+    <div class="area-categorie">
+      <div v-for="item in categories.value" :key="item.nCateg" class="category-grid-item">
+        <div class="category-card-container"> 
+          
+          <div class="categ-actions-item" :style="{ background: item.color }">
+            <div class="t-categ-badge">
+              <h2 class="t-categ-name">{{item.nCateg}}</h2>
+            </div>
+            <img class="img-icon" :src="LoadImg(item.codIcona)" alt="icon" />
+          </div>
+          
+          <div class="category-action-buttons-inline">
+            <button class="btn-categ-action add" @click="OpenAddTransitionGump(item.nCateg,item.codIcona,item.color)" title="Add">+</button>
+            <button class="btn-categ-action mod" @click="OpenCategGump('mod',item.nCateg,item.codIcona,item.color)" title="Mod">📝</button>
+            <button class="btn-categ-action merge" @click="OpenCategGump('merge',item.nCateg,item.codIcona,item.color)" title="Merge">🔗</button>
+            <button class="btn-categ-action del" @click="OpenCategGump('del',item.nCateg,item.codIcona,item.color)" title="Del">🗑️</button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
   </div>
-</div>`;
+</div>
+`;
 
 const subComponentTransition_Html=`
 <div :style="{ display: modalTransitionState.add }" class="modal">
@@ -242,8 +304,8 @@ const subComponentTransition_Html=`
         <div class="modal-content">
             <span class="close"  @click="CloseTransitionGump">&times;</span>
             <div class="modal-heading">
-              <h2 class="modal-nCateg">{{itemData.value.nCateg}}</h2> 
               <div class="modal-icon" :style="{ background: itemData.value.color }"><img class="img-icon" :src="LoadImg(itemData.value.nIcon)" alt="" /></div>
+              <h2 class="modal-nCateg">{{itemData.value.nCateg}}</h2> 
             </div>
             <input class="input-valuetrans" v-model="itemData.value.valueTransition" placeholder="Valore">
             <input class="input-notatrans" v-model="itemData.value.noteTransition" placeholder="Nota">
@@ -286,119 +348,191 @@ const subComponentTransition_Html=`
             <p class="warning">{{ warning }}</p>
         </div>
 </div>
-<div class="Container-Transitions" :style="{ display: displayAppSpese.containerTransitions }">
-  <!-- La lista si attiva SOLO quando le categorie sono realmente pronte in memoria -->
-<ul class="list-transitions" v-if="categories.value && Object.keys(categories.value).length > 0">
-  <li v-for="item in arrayTransitions" :key="item[0]" class="transition-row" :style="{ borderLeftColor: categories.value[codContainer[item[0]]]?.color }">
-    
-    <!-- Contenitore di sinistra: Icona + Testi -->
-    <div class="t-left-block">
-      <div class="t-icon-container" :style="{ backgroundColor: categories.value[codContainer[item[0]]]?.color + '15', borderColor: categories.value[codContainer[item[0]]]?.color }">
-        <img :src="LoadImg(categories.value[codContainer[item[0]]].codIcona)" 
-             alt="icon" 
-             class="t-icon-img" 
-             v-if="categories.value[codContainer[item[0]]]?.codIcona !== undefined" 
-        />
-      </div>
+<div class="Container-Transitions" v-show="currentTab === 'transitions'">
+  <div class="area-categorie-wrapper">
       
-      <!-- Blocco scritte: Data e Nome Categoria -->
-      <div class="t-meta-block">
-        <span class="t-date">{{ item[3] }}</span>
-        <span class="t-category">{{ codContainer[item[0]] }}</span>
-      </div>
-    </div>
-    
-    <!-- Nota/Descrizione al centro -->
-    <div class="t-desc">{{ item[1] }}</div>
-    
-    <!-- Valore economico (Prezzo) -->
-    <div class="t-value">-{{ item[2] }} €</div>
-
-    <!-- Pulsanti di azione rapidi in linea -->
-    <div class="trans-actions-block">
-      <button class="btn-inline-action mod" @click="OpenModTransitionGump(item[0], item[1], item[2], item[3])">Mod</button>
-      <button class="btn-inline-action del" @click="OpenDelTransitionGump(item[0], item[1], item[2], item[3])">Del</button>
+    <!-- Nuovo Header Fisso per le transazioni -->
+    <div class="categories-action-header">
+      <h3 class="categories-header-title">Le tue Transazioni</h3>
+        <span class="header-subtitle-info">Registro Spese</span>
     </div>
 
-  </li>
-</ul>
+    <!-- La lista si attiva SOLO quando le categorie sono realmente pronte in memoria -->
+    <ul class="list-transitions" v-if="categories.value && Object.keys(categories.value).length > 0">
+      <li v-for="item in arrayTransitions" :key="item[0]" class="transition-row" :style="{ borderLeftColor: categories.value[codContainer[item[0]]]?.color }">
+        
+        <!-- Contenitore di sinistra: Icona + Testi -->
+        <div class="t-left-block">
+          <div class="t-icon-container" :style="{ backgroundColor: categories.value[codContainer[item[0]]]?.color + '15', borderColor: categories.value[codContainer[item[0]]]?.color }">
+            <img :src="LoadImg(categories.value[codContainer[item[0]]].codIcona)" 
+                alt="icon" 
+                class="t-icon-img" 
+                v-if="categories.value[codContainer[item[0]]]?.codIcona !== undefined" 
+            />
+          </div>
+          
+          <!-- Blocco scritte: Data e Nome Categoria -->
+          <div class="t-meta-block">
+            <span class="t-date">{{ item[3] }}</span>
+            <span class="t-category">{{ codContainer[item[0]] }}</span>
+          </div>
+        </div>
+        
+        <!-- Nota/Descrizione al centro -->
+        <div class="t-desc">{{ item[1] }}</div>
+        
+        <!-- Valore economico (Prezzo) -->
+        <div class="t-value">-{{ item[2] }} €</div>
 
-<!-- Fallback visivo temporaneo mentre Firebase sta scaricando i dati -->
-<div v-else class="t-loading-text">
-  Loading your balance ledger...
-</div>
+        <!-- Pulsanti di azione rapidi in linea -->
+        <div class="trans-actions-block">
+          <button class="btn-inline-action mod" @click="OpenModTransitionGump(item[0], item[1], item[2], item[3])">Mod</button>
+          <button class="btn-inline-action del" @click="OpenDelTransitionGump(item[0], item[1], item[2], item[3])">Del</button>
+        </div>
 
+      </li>
+    </ul>
+
+    <!-- Fallback visivo temporaneo mentre Firebase sta scaricando i dati -->
+    <div v-else class="t-loading-text">
+      Loading your balance ledger...
+    </div>
+  </div>
 </div>`;
 
 const subComponentTools_Html=`
-  <div class="Container-Tools" :style="{ display: displayAppSpese.containerTools }">
-    <div :style="{ display: itemData_Tools.toolsGump }" class="modal">
-    <!-- Modal content -->
-      <div class="modal-content">
-        <span class="close"  @click="CloseToolsGump">&times;</span>
-        <label>Choose a type of date:</label>
-        <br>
-          <select class="type-date-gump" v-model="itemData_Tools.type">
-            <option value="alltime" selected>Alltime</option>
-            <option value="year">Year</option>
-            <option value="month">Month</option>
-            <option value="week">Week</option>
-            <option value="day">Day</option>
-          </select>
-        <input type="date" v-model="itemData_Tools.value" class="input-date" :style="{ display: itemData_Tools.dBool }" />
-        <input type="month" v-model="itemData_Tools.value" class="input-date" :style="{ display: itemData_Tools.mBool }" />
-        <input type="number" v-model="itemData_Tools.value" class="input-date" :style="{ display: itemData_Tools.yBool }" />  
-        <br>
-        <div class="btn-modal"  @click="ConfirmDate">Confirm</div>
-        <p class="warning">{{ warning }}</p>
-      </div>
-    </div>
-    <div class="container-btn-study">
-      <div class="button-studygraphs"  @click="OpenToolsGump">Show Charts</div>
-      <div class="tools-data-type" v-show="itemData_Tools.type!==''">{{itemData_Tools.type}} : {{itemData_Tools.value}}</div>
-    </div>
-    <br>  <!-- day/week -->
-    <div class="list-graph-date" :style="{ display: itemData_Tools.tabBool }">
-      <div class="list-graph-tab" :style="{ display: itemData_Tools.dBool }">
-        <div class="graph-column" v-for="day in objView.week.arr">
-          <div class="graph-label">{{objGraphView.tras(day.index)}}</div>
-          <div class="graph-column-value">
-            <div class="graph-column-bar" v-for="(categ,ncateg) in day.value.categ" :style='{background: categ.metadati["color"], height: objGraphView.percent(categ["sum"],objView.week.max)}'></div>
+  <div class="Container-Tools" v-show="currentTab === 'tools'">
+
+    <div class="area-categorie-wrapper">
+
+        <div class="categories-action-header">
+        <div class="flex-header-text-combo">
+          <h3 class="categories-header-title">Grafici e Analisi</h3>
+          <div class="tools-data-type-inline" v-show="itemData_Tools.type!==''">
+            {{itemData_Tools.type}} : {{itemData_Tools.value}}
           </div>
         </div>
+        
+        <!-- Spostato il tuo bottone dentro l'header in modo elegante -->
+        <button class="btn-add-category-fixed" @click="OpenToolsGump">
+          🔍 Filtra Data
+        </button>
+      </div>
+
+      <div :style="{ display: itemData_Tools.toolsGump }" class="modal">
+      <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close"  @click="CloseToolsGump">&times;</span>
+          <label>Choose a type of date:</label>
+          <br>
+            <select class="type-date-gump" v-model="itemData_Tools.type">
+              <option value="alltime" selected>Alltime</option>
+              <option value="year">Year</option>
+              <option value="month">Month</option>
+              <option value="week">Week</option>
+              <option value="day">Day</option>
+            </select>
+          <input type="date" v-model="itemData_Tools.value" class="input-date" :style="{ display: itemData_Tools.dBool }" />
+          <input type="month" v-model="itemData_Tools.value" class="input-date" :style="{ display: itemData_Tools.mBool }" />
+          <input type="number" v-model="itemData_Tools.value" class="input-date" :style="{ display: itemData_Tools.yBool }" />  
+          <br>
+          <div class="btn-modal"  @click="ConfirmDate">Confirm</div>
+          <p class="warning">{{ warning }}</p>
+        </div>
+      </div>
+      <br>  <!-- day/week -->
+        <div class="list-graph-tab" :style="{ display: itemData_Tools.dBool }">
+          <div class="graph-y-axis" v-if="objView.week.max > 0">
+            <div class="y-tick"><span>{{ Math.round(objView.week.max) }} €</span></div>
+            <div class="y-tick"><span>{{ Math.round(objView.week.max / 2) }} €</span></div>
+            <div class="y-tick"><span>{{ Math.round(objView.week.max / 4) }} €</span></div>
+            <div class="y-tick"><span>0 €</span></div>
+          </div>
+          <div class="graph-columns-container">
+            <div class="graph-column" v-for="day in objView.week.arr">
+              <div class="graph-label">{{objGraphView.tras(day.index)}}</div>
+              <div class="graph-column-value">
+                <div class="graph-column-bar" v-for="(categ,ncateg) in day.value.categ" :style='{background: categ.metadati["color"], height: objGraphView.percent(categ["sum"],objView.week.max)}'></div>
+              </div>
+            </div>
+          </div>
+        </div>  <!-- AllTime --> 
+        <div class="list-graph-tab" :style="{ display: itemData_Tools.aBool }">
+          <div class="graph-y-axis" v-if="objView.all.max > 0">
+            <div class="y-tick"><span>{{ Math.round(objView.all.max) }} €</span></div>
+            <div class="y-tick"><span>{{ Math.round(objView.all.max / 2) }} €</span></div>
+            <div class="y-tick"><span>{{ Math.round(objView.all.max / 4) }} €</span></div>
+            <div class="y-tick"><span>0 €</span></div>
+          </div>
+          <div class="graph-columns-container">
+            <div class="graph-column" v-for="(years,index) in objView.all.years">
+              <div class="graph-label">{{index}}</div>
+              <div class="graph-column-value">
+                <div class="graph-column-bar" v-for="(categ,ncateg) in years.categ" :style='{background: categ.metadati["color"], height: objGraphView.percent(categ["sum"],objView.all.max)}'></div>
+              </div>
+            </div>
+          </div>
       </div> <!-- Month -->
-      <div class="list-graph-tab" :style="{ display: itemData_Tools.mBool }">
-        <div class="graph-column" v-for="(day,index) in objView.month.days">
-          <div class="graph-label">{{index}}</div>
-          <div class="graph-column-value">
-            <div class="graph-column-bar" v-for="(categ,ncateg) in day.categ" :style='{background: categ.metadati["color"], height: objGraphView.percent(categ["sum"],objView.month.sum)}'></div>
+        <div class="list-graph-tab-cartesiano" :style="{ display: itemData_Tools.mBool }">
+          
+          <div class="cartesio-y-axis" v-if="objView.month.sum > 0">
+            <div class="y-label-tick"><span>{{ Math.round(objView.month.sum) }}</span></div>
+            <div class="y-label-tick"><span>{{ Math.round(objView.month.sum / 2) }}</span></div>
+            <div class="y-label-tick"><span>{{ Math.round(objView.month.sum / 4) }}</span></div>
+            <div class="y-label-tick"><span>0</span></div>
           </div>
-        </div>
-      </div> <!-- Year -->
-      <div class="list-graph-tab" :style="{ display: itemData_Tools.yBool }">
-        <div class="graph-column" v-for="(months,index) in objView.year.months">
-          <div class="graph-label">{{objGraphView.trasmonth(index)}}</div>
-          <div class="graph-column-value">
-            <div class="graph-column-bar" v-for="(categ,ncateg) in months.categ" :style='{background: categ.metadati["color"], height: objGraphView.percent(categ["sum"], objView.year.max)}'></div>
+
+          <div class="cartesio-plot-area">
+            <div class="cartesio-bar-track" v-for="(day, index) in objView.month.days" :key="index">
+              <div class="graph-column-value-cartesio">
+                <div class="graph-column-bar" v-for="(categ, ncateg) in day.categ" 
+                    :style='{ background: categ.metadati["color"], height: objGraphView.percent(categ["sum"], objView.month.sum) }'>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div> <!-- AllTime -->
-      <div class="list-graph-tab" :style="{ display: itemData_Tools.aBool }">
-        <div class="graph-column" v-for="(years,index) in objView.all.years">
-          <div class="graph-label">{{index}}</div>
-          <div class="graph-column-value">
-            <div class="graph-column-bar" v-for="(categ,ncateg) in years.categ" :style='{background: categ.metadati["color"], height: objGraphView.percent(categ["sum"],objView.all.max)}'></div>
+
+          <div class="cartesio-corner-space"></div>
+
+          <div class="cartesio-x-axis">
+            <div class="x-label-tick" v-for="(day, index) in objView.month.days" :key="index">
+              {{ index }}
+            </div>
           </div>
-        </div>
+
+        </div> <!-- Year -->
+        <div class="list-graph-tab" :style="{ display: itemData_Tools.yBool }">
+          <div class="graph-y-axis" v-if="objView.year.max > 0">
+            <div class="y-tick"><span>{{ Math.round(objView.year.max) }} €</span></div>
+            <div class="y-tick"><span>{{ Math.round(objView.year.max / 2) }} €</span></div>
+            <div class="y-tick"><span>{{ Math.round(objView.year.max / 4) }} €</span></div>
+            <div class="y-tick"><span>0 €</span></div>
+          </div>
+          <div class="graph-columns-container">
+            <div class="graph-column" v-for="(months,index) in objView.year.months">
+              <div class="graph-label">{{objGraphView.trasmonth(index)}}</div>
+              <div class="graph-column-value">
+                <div class="graph-column-bar" v-for="(categ,ncateg) in months.categ" :style='{background: categ.metadati["color"], height: objGraphView.percent(categ["sum"], objView.year.max)}'></div>
+              </div>
+            </div>
+          </div>
+      </div>  <!-- Horizontal Graph -->
+      <div class="list-graph-sum" :style="{ display: itemData_Tools.sumBool }">
+        <li class="item-graph" v-for="item in objView.h_bar" :key="item.nCateg">
+          
+          <!-- Colonna 1: Nome Categoria (Protetto da testi troppo lunghi) -->
+          <div class="graph-ncateg" :title="item.nCateg">{{ item.nCateg }}</div>
+          
+          <!-- Colonna 2: Il binario della barra (Utile per dare profondità) -->
+          <div class="graph-track">
+            <div class="graph-sum" :style='{ background: item.color, width: objGraphView.percent(item.sum, objGraphView.sum) }'></div>
+          </div>
+          
+          <!-- Colonna 3: Il prezzo finale allineato a destra -->
+          <div class="graph-value-text">{{ item.sum }} €</div>
+          
+        </li>
       </div>
-      <div class="tab-footer" :style="{ display: itemData_Tools.sumBool }"></div>
-    </div> <!-- Horizontal Graph -->
-    <div class="list-graph-sum" :style="{ display: itemData_Tools.sumBool }">
-      <li class="item-graph" v-for="item in objView.h_bar">
-        <div class="graph-ncateg">{{item["nCateg"]}}</div>
-        <div class="graph-sum" :style='{background: item["color"], width: objGraphView.percent(item["sum"],objGraphView.sum)}'></div>
-        <div>{{item["sum"]}}</div>
-      </li>
     </div>
   </div>
 `;
@@ -408,12 +542,13 @@ const componentSpese_Html=`
 <!-- Sidebar-->
 <div id="navbar-side" class="navbar-side">
   <div class="sidebar-heading">Menù</div>
-  <div class="list-group">
-      <li><div  @click="OpenCategory">Categories</div></li>
-      <li><div  @click="OpenTransitions">Transitions</div></li>
-      <li><div  @click="OpenAnalyticsTools">Analytics Tools</div></li>
-  </div>
-</div>`+subComponentCategory_Html+subComponentTransition_Html+subComponentTools_Html+`</div>`
+  <!-- Trasformato il div in un tag ul per rispettare gli standard web -->
+  <ul class="list-group">
+      <li @click="OpenCategory" class="navbar-side-item">Categories</li>
+      <li @click="OpenTransitions" class="navbar-side-item">Transitions</li>
+      <li @click="OpenAnalyticsTools" class="navbar-side-item">Analytics Tools</li>
+  </ul>
+</div>`+subComponentCategory_Html+subComponentTransition_Html+subComponentTools_Html+`</div>`;
 
 
 export {html_ , _html, html1, html2, html3, componentMenu_Html,componentNotes_Html, componentAuthentication_Html, componentSpese_Html}

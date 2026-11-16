@@ -10,6 +10,7 @@ export const warningSign= ref("");
 export const userName=reactive({value:"", id:"", logged:false, temp:"",display:"none"});
 export const items = reactive({"value":{}});
 export const categories = reactive({"value":{}});
+export const currentTab = ref("categories");
 export const capDay= reactive({"value":0,active:false});
 export const objGraphView= reactive({value:{},sum:0,'percent':(a,b)=>(a*100/b)+"%",'tras': TranslateDaysWeek,'trasmonth': TranslateMonths});
 export const date=reactive({"value":"","type":""});
